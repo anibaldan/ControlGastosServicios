@@ -1,0 +1,12 @@
+# Datos de usuario (exportaciones JSON con datos reales)
+webapp/control-gastos-*.json
+
+# Archivos del sistema
+Thumbs.db
+.DS_Store
+desktop.ini
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

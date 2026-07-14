@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Gastos de Servicios</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1>Control de Gastos de Servicios</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="themeToggle">Tema Oscuro</button>
+                    <button class="btn btn-info" id="importExcelBtn">Importar Excel</button>
+                </div>
+            </div>
+        </header>
+
+        <nav class="tabs-container">
+            <button class="tab-btn active" data-tab="registro">Nuevo Registro</button>
+            <button class="tab-btn" data-tab="historial">Historial</button>
+            <button class="tab-btn" data-tab="graficos">Analisis</button>
+            <button class="tab-btn" data-tab="servicios">Servicios</button>
+            <button class="tab-btn" data-tab="medios">Medios de Pago</button>
+            <button class="tab-btn" data-tab="datos">Datos</button>
+        </nav>
+
+        <main class="content">
+
+            <!-- TAB 1: Registro de Pagos -->
+            <section id="registro" class="tab-content active">
+                <div class="form-container">
+                    <h2>Registrar Nuevo Pago</h2>
+                    <form id="paymentForm" class="payment-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="servicioSelect">Servicio a Pagar *</label>
+                                <select id="servicioSelect" required>
+                                    <option value="">Seleccionar servicio...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="medioSelect">Medio de Pago *</label>
+                                <select id="medioSelect" required>
+                                    <option value="">Seleccionar medio...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fechaPago">Fecha de Pago *</label>
+                                <input type="date" id="fechaPago" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fechaVencimiento">Fecha de Vencimiento *</label>
+                                <input type="date" id="fechaVencimiento" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="importe">Importe *</label>
+                                <input type="number" id="importe" step="0.01" min="0" required placeholder="0.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="moneda">Moneda *</label>
+                                <select id="moneda" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="ARS">Pesos Argentinos (ARS)</option>
+                                    <option value="USD">Dolares Estadounidenses (USD)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="categoria">Categoria (Opcional)</label>
+                                <input type="text" id="categoria" list="categoriaList" placeholder="Ej: Luz, Agua, Internet...">
+                                <datalist id="categoriaList"></datalist>
+                            </div>
+                            <div class="form-group">
+                                <label for="notas">Notas (Opcional)</label>
+                                <textarea id="notas" rows="1" placeholder="Agregar observaciones..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Registrar Pago</button>
+                            <button type="reset" class="btn btn-secondary">Limpiar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="summary-container">
+                    <h3>Resumen de Hoy</h3>
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <div class="summary-label">Pagos Realizados</div>
+                            <div class="summary-value" id="todayPaymentsCount">0</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-label">Total ARS</div>
+                            <div class="summary-value" id="todayTotalARS">$0.00</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-label">Total USD</div>
+                            <div class="summary-value" id="todayTotalUSD">U$S 0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: Historial -->
+            <section id="historial" class="tab-content">
+                <div class="historial-container">
+                    <div class="historial-header">
+                        <h2>Historial de Pagos</h2>
+                        <div class="filter-group">
+                            <input type="text" id="searchInput" placeholder="Buscar por servicio, medio, notas, categoria..." class="filter-search">
+                            <select id="filterServicio">
+                                <option value="">Todos los servicios</option>
+                            </select>
+                            <select id="filterAño">
+                                <option value="">Todos los años</option>
+                            </select>
+                            <select id="filterMes">
+                                <option value="">Todos los meses</option>
+                                <option value="01">Enero</option>
+                                <option value="02">Febrero</option>
+                                <option value="03">Marzo</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Mayo</option>
+                                <option value="06">Junio</option>
+                                <option value="07">Julio</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                            <button class="btn btn-secondary" id="clearFiltersBtn">Limpiar Filtros</button>
+                        </div>
+                    </div>
+
+                    <div class="historial-stats">
+                        <div class="stat-card">
+                            <span class="stat-label">Registros:</span>
+                            <span class="stat-value" id="registrosCount">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Total ARS:</span>
+                            <span class="stat-value" id="totalARS">$0.00</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Total USD:</span>
+                            <span class="stat-value" id="totalUSD">U$S 0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="historialTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-sort="servicio">Servicio</th>
+                                    <th class="sortable" data-sort="fechaPago">Fecha Pago</th>
+                                    <th class="sortable" data-sort="fechaVencimiento">Vencimiento</th>
+                                    <th class="sortable" data-sort="importe">Importe</th>
+                                    <th>Moneda</th>
+                                    <th>Medio de Pago</th>
+                                    <th>Categoria</th>
+                                    <th>Notas</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historialBody">
+                            </tbody>
+                        </table>
+                        <div id="emptyMessage" class="empty-message">No hay registros que mostrar</div>
+                    </div>
+
+                    <div id="paginationControls" class="pagination-controls" style="display:none;">
+                        <button class="btn btn-secondary btn-small" id="prevPageBtn">Anterior</button>
+                        <span id="pageInfo" class="page-info"></span>
+                        <button class="btn btn-secondary btn-small" id="nextPageBtn">Siguiente</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: Graficos y Analisis -->
+            <section id="graficos" class="tab-content">
+                <div class="graficos-container">
+                    <h2>Analisis de Datos</h2>
+
+                    <div class="graficos-filters">
+                        <select id="chartFilterAño">
+                            <option value="">Todos los años</option>
+                        </select>
+                        <select id="chartFilterMes">
+                            <option value="">Todos los meses</option>
+                            <option value="01">Enero</option>
+                            <option value="02">Febrero</option>
+                            <option value="03">Marzo</option>
+                            <option value="04">Abril</option>
+                            <option value="05">Mayo</option>
+                            <option value="06">Junio</option>
+                            <option value="07">Julio</option>
+                            <option value="08">Agosto</option>
+                            <option value="09">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                        <button class="btn btn-secondary" id="updateChartsBtn">Actualizar Graficos</button>
+                    </div>
+
+                    <div class="chart-stats">
+                        <div class="stat-box">
+                            <h4>Total ARS</h4>
+                            <div class="stat-number" id="chartTotalARS">$0.00</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Total USD</h4>
+                            <div class="stat-number" id="chartTotalUSD">U$S 0.00</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Promedio por Pago</h4>
+                            <div class="stat-number" id="chartPromedioPago">$0.00</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Cantidad de Pagos</h4>
+                            <div class="stat-number" id="chartCantidadPagos">0</div>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid">
+                        <div class="chart-wrapper">
+                            <h3>Gastos por Servicio</h3>
+                            <canvas id="serviciosChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper">
+                            <h3>Gastos por Medio de Pago</h3>
+                            <canvas id="mediosChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper full-width">
+                            <h3>Evolucion Mensual de Gastos</h3>
+                            <canvas id="evolutionChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper full-width">
+                            <h3>Distribucion por Moneda</h3>
+                            <canvas id="monedaChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: Gestion de Servicios -->
+            <section id="servicios" class="tab-content">
+                <div class="management-container">
+                    <h2>Gestionar Servicios</h2>
+
+                    <div class="management-form">
+                        <h3>Agregar Nuevo Servicio</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nuevoServicio">Nombre del Servicio *</label>
+                                <input type="text" id="nuevoServicio" placeholder="Ej: Secheep, SAMEEP, Flow..." required>
+                            </div>
+                            <div class="form-group">
+                                <label for="servicioDescripcion">Descripcion (Opcional)</label>
+                                <input type="text" id="servicioDescripcion" placeholder="Descripcion adicional">
+                            </div>
+                            <button type="button" class="btn btn-primary" id="agregarServicioBtn">Agregar Servicio</button>
+                        </div>
+                    </div>
+
+                    <h3>Servicios Registrados</h3>
+                    <div class="list-container" id="serviciosList">
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: Gestion de Medios de Pago -->
+            <section id="medios" class="tab-content">
+                <div class="management-container">
+                    <h2>Gestionar Medios de Pago</h2>
+
+                    <div class="management-form">
+                        <h3>Agregar Nuevo Medio de Pago</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nuevoMedio">Nombre del Medio *</label>
+                                <input type="text" id="nuevoMedio" placeholder="Ej: Tarjeta Credito, Billetera A..." required>
+                            </div>
+                            <div class="form-group">
+                                <label for="medioTipo">Tipo *</label>
+                                <select id="medioTipo" required>
+                                    <option value="">Seleccionar tipo...</option>
+                                    <option value="credito">Tarjeta de Credito</option>
+                                    <option value="debito">Tarjeta de Debito</option>
+                                    <option value="billetera">Billetera Virtual</option>
+                                    <option value="efectivo">Efectivo</option>
+                                    <option value="transferencia">Transferencia</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="agregarMedioBtn">Agregar Medio</button>
+                        </div>
+                    </div>
+
+                    <h3>Medios de Pago Registrados</h3>
+                    <div class="list-container" id="mediosList">
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: Gestion de Datos -->
+            <section id="datos" class="tab-content">
+                <div class="datos-container">
+                    <h2>Gestion de Datos</h2>
+
+                    <div class="datos-section">
+                        <h3>Exportar Datos</h3>
+                        <p>Crea una copia de seguridad de todos tus datos en formato JSON o CSV</p>
+                        <div class="datos-actions">
+                            <button class="btn btn-success" id="exportJsonBtn">Descargar como JSON</button>
+                            <button class="btn btn-success" id="exportCsvBtn">Descargar como CSV</button>
+                        </div>
+                    </div>
+
+                    <div class="datos-section">
+                        <h3>Importar Datos</h3>
+                        <p>Restaura o agrega datos desde un archivo JSON previamente exportado</p>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="importJsonInput" accept=".json" style="display: none;">
+                            <button class="btn btn-success" id="importJsonBtn">Cargar JSON</button>
+                        </div>
+                        <div id="importStatus" class="import-status"></div>
+                    </div>
+
+                    <div class="datos-section">
+                        <h3>Utilidades</h3>
+                        <div class="utility-buttons">
+                            <button class="btn btn-warning" id="estadisticasBtn">Actualizar Estadisticas</button>
+                            <button class="btn btn-danger" id="limpiarTodoBtn">Limpiar Todo (No se puede deshacer)</button>
+                        </div>
+                    </div>
+
+                    <div class="datos-section">
+                        <h3>Estadisticas de la Base de Datos</h3>
+                        <div class="stats-info" id="statsInfo">
+                            <p>Cargando informacion...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modal para Edicion de Pagos -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal-btn" data-close="editModal">&times;</span>
+            <h2>Editar Registro</h2>
+            <form id="editForm" class="payment-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editServicio">Servicio</label>
+                        <select id="editServicio" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMedio">Medio de Pago</label>
+                        <select id="editMedio" required></select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editFechaPago">Fecha de Pago</label>
+                        <input type="date" id="editFechaPago" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editFechaVencimiento">Fecha de Vencimiento</label>
+                        <input type="date" id="editFechaVencimiento" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editImporte">Importe</label>
+                        <input type="number" id="editImporte" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMoneda">Moneda</label>
+                        <select id="editMoneda" required>
+                            <option value="ARS">Pesos Argentinos (ARS)</option>
+                            <option value="USD">Dolares Estadounidenses (USD)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editCategoria">Categoria</label>
+                        <input type="text" id="editCategoria" list="categoriaListEdit" placeholder="Categoria...">
+                        <datalist id="categoriaListEdit"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="editNotas">Notas</label>
+                        <textarea id="editNotas" rows="1"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <button type="button" class="btn btn-secondary modal-cancel-btn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Servicio Modal -->
+    <div id="editServicioModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal-btn" data-close="editServicioModal">&times;</span>
+            <h2>Editar Servicio</h2>
+            <form id="editServicioForm" class="payment-form">
+                <div class="form-group">
+                    <label for="editServicioNombre">Nombre</label>
+                    <input type="text" id="editServicioNombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="editServicioDescripcion">Descripcion</label>
+                    <textarea id="editServicioDescripcion" rows="3"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <button type="button" class="btn btn-secondary modal-cancel-btn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Medio Modal -->
+    <div id="editMedioModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal-btn" data-close="editMedioModal">&times;</span>
+            <h2>Editar Medio de Pago</h2>
+            <form id="editMedioForm" class="payment-form">
+                <div class="form-group">
+                    <label for="editMedioNombre">Nombre</label>
+                    <input type="text" id="editMedioNombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="editMedioTipo">Tipo</label>
+                    <select id="editMedioTipo" required>
+                        <option value="credito">Tarjeta de Credito</option>
+                        <option value="debito">Tarjeta de Debito</option>
+                        <option value="billetera">Billetera Virtual</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="transferencia">Transferencia</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <button type="button" class="btn btn-secondary modal-cancel-btn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de confirmacion de importacion -->
+    <div id="importModeModal" class="modal">
+        <div class="modal-content alert-modal">
+            <h3>Como desea importar los datos?</h3>
+            <p id="importModeInfo"></p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="importMergeBtn">Agregar (Merge)</button>
+                <button class="btn btn-warning" id="importReplaceBtn">Reemplazar Todo</button>
+                <button class="btn btn-secondary" id="importCancelBtn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content alert-modal">
+            <p id="confirmMessage"></p>
+            <div class="modal-buttons">
+                <button class="btn btn-danger" id="confirmYesBtn">Si, continuar</button>
+                <button class="btn btn-secondary" id="confirmNoBtn">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display:none;">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" onerror="this.onerror=null;this.src='lib/chart.js'"></script>
+    <script src="js/db.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
