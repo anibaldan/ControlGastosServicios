@@ -15,7 +15,7 @@ Aplicacion web para registro, control, seguimiento y analisis de gastos en servi
 
 ## Uso local
 
-Abrir `webapp/index.html` en cualquier navegador moderno. Los datos se guardan en IndexedDB del navegador.
+Abrir `docs/index.html` en cualquier navegador moderno. Los datos se guardan en IndexedDB del navegador.
 
 ## Uso online (GitHub Pages)
 
@@ -24,7 +24,7 @@ Una vez desplegado, acceder desde cualquier dispositivo via URL. Los datos sigue
 ## Estructura
 
 ```
-webapp/
+docs/
 ├── index.html          # Entrada principal
 ├── css/styles.css      # Estilos
 ├── js/
