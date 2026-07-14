@@ -1,5 +1,5 @@
 # Datos de usuario (exportaciones JSON con datos reales)
-webapp/control-gastos-*.json
+docs/control-gastos-*.json
 
 # Archivos del sistema
 Thumbs.db
