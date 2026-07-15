@@ -1,6 +1,10 @@
 # Datos de usuario (exportaciones JSON con datos reales)
 docs/control-gastos-*.json
 
+# Documentacion obsoleta del inicio del proyecto
+INICIO-RAPIDO.md
+RESUMEN-PROYECTO.txt
+
 # Archivos del sistema
 Thumbs.db
 .DS_Store
