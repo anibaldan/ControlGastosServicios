@@ -96,6 +96,16 @@ class DatabaseManager {
         });
     }
 
+    async findPotentialDuplicate(servicio, fechaPago, importe, excludeId = null) {
+        const payments = await this.getAllPayments();
+        return payments.find(p =>
+            p.servicio === servicio &&
+            p.fechaPago === fechaPago &&
+            parseFloat(p.importe) === parseFloat(importe) &&
+            p.id !== excludeId
+        );
+    }
+
     getAllPayments() {
         this._ensureDb();
         return new Promise((resolve, reject) => {
@@ -394,41 +404,39 @@ class DatabaseManager {
         const { data } = jsonData;
         const stats = { servicios: 0, medios: 0, pagos: 0, skippedServicios: 0, skippedMedios: 0 };
 
+        const existingServicios = await this.getAllServicios();
+        const existingMedios = await this.getAllMedios();
+        const existingServiciosNames = new Set(existingServicios.map(s => s.nombre.toLowerCase()));
+        const existingMediosNames = new Set(existingMedios.map(m => m.nombre.toLowerCase()));
+
+        const serviciosToAdd = [];
         if (data.servicios && Array.isArray(data.servicios)) {
-            const existing = await this.getAllServicios();
-            const existingNames = new Set(existing.map(s => s.nombre.toLowerCase()));
             for (const servicio of data.servicios) {
-                if (existingNames.has(servicio.nombre.toLowerCase())) {
+                if (existingServiciosNames.has(servicio.nombre.toLowerCase())) {
                     stats.skippedServicios++;
-                    continue;
+                } else {
+                    serviciosToAdd.push({ nombre: servicio.nombre, descripcion: servicio.descripcion || '' });
+                    stats.servicios++;
                 }
-                await this.addServicio({
-                    nombre: servicio.nombre,
-                    descripcion: servicio.descripcion || ''
-                });
-                stats.servicios++;
             }
         }
 
+        const mediosToAdd = [];
         if (data.medios && Array.isArray(data.medios)) {
-            const existing = await this.getAllMedios();
-            const existingNames = new Set(existing.map(m => m.nombre.toLowerCase()));
             for (const medio of data.medios) {
-                if (existingNames.has(medio.nombre.toLowerCase())) {
+                if (existingMediosNames.has(medio.nombre.toLowerCase())) {
                     stats.skippedMedios++;
-                    continue;
+                } else {
+                    mediosToAdd.push({ nombre: medio.nombre, tipo: medio.tipo || 'otro' });
+                    stats.medios++;
                 }
-                await this.addMedio({
-                    nombre: medio.nombre,
-                    tipo: medio.tipo || 'otro'
-                });
-                stats.medios++;
             }
         }
 
+        const paymentsToAdd = [];
         if (data.payments && Array.isArray(data.payments)) {
             for (const payment of data.payments) {
-                await this.addPayment({
+                paymentsToAdd.push({
                     servicio: payment.servicio,
                     medio: payment.medio,
                     fechaPago: payment.fechaPago,
@@ -442,49 +450,79 @@ class DatabaseManager {
             }
         }
 
-        return { success: true, stats };
+        if (serviciosToAdd.length === 0 && mediosToAdd.length === 0 && paymentsToAdd.length === 0) {
+            return { success: true, stats };
+        }
+
+        const storeNames = [this.objectStores.servicios, this.objectStores.medios, this.objectStores.payments];
+        const transaction = this.db.transaction(storeNames, 'readwrite');
+        const now = new Date().toISOString();
+
+        const serviciosStore = transaction.objectStore(this.objectStores.servicios);
+        for (const s of serviciosToAdd) {
+            serviciosStore.add(s);
+        }
+
+        const mediosStore = transaction.objectStore(this.objectStores.medios);
+        for (const m of mediosToAdd) {
+            mediosStore.add(m);
+        }
+
+        const paymentsStore = transaction.objectStore(this.objectStores.payments);
+        for (const p of paymentsToAdd) {
+            paymentsStore.add({ ...p, createdAt: now, updatedAt: now });
+        }
+
+        return new Promise((resolve, reject) => {
+            transaction.oncomplete = () => resolve({ success: true, stats });
+            transaction.onerror = () => reject(transaction.error);
+        });
     }
 
     async _importDataItems(data) {
         const stats = { servicios: 0, medios: 0, pagos: 0 };
 
-        if (data.servicios && Array.isArray(data.servicios)) {
-            for (const servicio of data.servicios) {
-                await this.addServicio({
-                    nombre: servicio.nombre,
-                    descripcion: servicio.descripcion || ''
-                });
-                stats.servicios++;
-            }
+        const servicios = (data.servicios && Array.isArray(data.servicios)) ? data.servicios : [];
+        const medios = (data.medios && Array.isArray(data.medios)) ? data.medios : [];
+        const payments = (data.payments && Array.isArray(data.payments)) ? data.payments : [];
+
+        const storeNames = [this.objectStores.servicios, this.objectStores.medios, this.objectStores.payments];
+        const transaction = this.db.transaction(storeNames, 'readwrite');
+
+        const serviciosStore = transaction.objectStore(this.objectStores.servicios);
+        for (const s of servicios) {
+            serviciosStore.add({ nombre: s.nombre, descripcion: s.descripcion || '' });
+            stats.servicios++;
         }
 
-        if (data.medios && Array.isArray(data.medios)) {
-            for (const medio of data.medios) {
-                await this.addMedio({
-                    nombre: medio.nombre,
-                    tipo: medio.tipo || 'otro'
-                });
-                stats.medios++;
-            }
+        const mediosStore = transaction.objectStore(this.objectStores.medios);
+        for (const m of medios) {
+            mediosStore.add({ nombre: m.nombre, tipo: m.tipo || 'otro' });
+            stats.medios++;
         }
 
-        if (data.payments && Array.isArray(data.payments)) {
-            for (const payment of data.payments) {
-                await this.addPayment({
-                    servicio: payment.servicio,
-                    medio: payment.medio,
-                    fechaPago: payment.fechaPago,
-                    fechaVencimiento: payment.fechaVencimiento,
-                    importe: payment.importe,
-                    moneda: payment.moneda,
-                    notas: payment.notas || '',
-                    categoria: payment.categoria || ''
-                });
-                stats.pagos++;
-            }
+        const paymentsStore = transaction.objectStore(this.objectStores.payments);
+        const now = new Date().toISOString();
+        for (const p of payments) {
+            paymentsStore.add({
+                servicio: p.servicio,
+                medio: p.medio,
+                fechaPago: p.fechaPago,
+                fechaVencimiento: p.fechaVencimiento,
+                importe: p.importe,
+                moneda: p.moneda,
+                notas: p.notas || '',
+                categoria: p.categoria || '',
+                createdAt: now,
+                updatedAt: now
+            });
+            stats.pagos++;
         }
 
-        return { success: true, stats };
+        return new Promise((resolve, reject) => {
+            transaction.oncomplete = () => resolve({ success: true, stats });
+            transaction.onerror = () => reject(transaction.error);
+        });
     }
 
     async getStats() {
@@ -504,9 +542,12 @@ class DatabaseManager {
         if (payments.length > 0) {
             payments.forEach(p => {
                 if (p.fechaPago) {
-                    const d = new Date(p.fechaPago + 'T00:00:00');
-                    if (!ultimaFecha || d > ultimaFecha) {
-                        ultimaFecha = d;
+                    const parts = p.fechaPago.split('-');
+                    if (parts.length === 3) {
+                        const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                        if (!ultimaFecha || d > ultimaFecha) {
+                            ultimaFecha = d;
+                        }
                     }
                 }
             });

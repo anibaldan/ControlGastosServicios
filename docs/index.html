@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#3498db">
+    <meta name="description" content="Aplicacion web para registro, control y analisis de gastos en servicios">
+    <link rel="manifest" href="manifest.json">
     <title>Control de Gastos de Servicios</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -13,7 +16,6 @@
                 <h1>Control de Gastos de Servicios</h1>
                 <div class="header-actions">
                     <button class="btn btn-secondary" id="themeToggle">Tema Oscuro</button>
-                    <button class="btn btn-info" id="importExcelBtn">Importar Excel</button>
                 </div>
             </div>
         </header>
@@ -226,8 +228,12 @@
                             <div class="stat-number" id="chartTotalUSD">U$S 0.00</div>
                         </div>
                         <div class="stat-box">
-                            <h4>Promedio por Pago</h4>
-                            <div class="stat-number" id="chartPromedioPago">$0.00</div>
+                            <h4>Promedio ARS</h4>
+                            <div class="stat-number" id="chartPromedioARS">$0.00</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Promedio USD</h4>
+                            <div class="stat-number" id="chartPromedioUSD">U$S 0.00</div>
                         </div>
                         <div class="stat-box">
                             <h4>Cantidad de Pagos</h4>
@@ -506,11 +512,19 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" onerror="this.onerror=null;this.src='lib/chart.js'"></script>
     <script src="js/db.js"></script>
     <script src="js/services.js"></script>
     <script src="js/charts.js"></script>
-    <script src="js/ui.js"></script>
+    <script src="js/ui-core.js"></script>
+    <script src="js/ui-payments.js"></script>
+    <script src="js/ui-entities.js"></script>
+    <script src="js/ui-data.js"></script>
+    <script src="js/ui-charts.js"></script>
     <script src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    </script>
 </body>
 </html>

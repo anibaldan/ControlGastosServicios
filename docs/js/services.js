@@ -71,7 +71,7 @@ class PaymentService {
         }
     }
 
-    async registrarPago(paymentData) {
+    async registrarPago(paymentData, skipDuplicateCheck = false) {
         if (!paymentData.servicio || !paymentData.medio || paymentData.importe === undefined || paymentData.importe === null || paymentData.importe === '') {
             throw new Error('Faltan datos obligatorios (servicio, medio, importe)');
         }
@@ -99,9 +99,23 @@ class PaymentService {
             throw new Error('La fecha de pago no puede ser posterior a la fecha de vencimiento');
         }
 
+        if (!skipDuplicateCheck) {
+            const duplicate = await this.db.findPotentialDuplicate(
+                paymentData.servicio, paymentData.fechaPago, parsedImporte
+            );
+            if (duplicate) {
+                return {
+                    success: false,
+                    isDuplicate: true,
+                    existingPayment: duplicate
+                };
+            }
+        }
+
         paymentData.importe = parsedImporte;
         paymentData.categoria = paymentData.categoria || '';
-        return await this.db.addPayment(paymentData);
+        const id = await this.db.addPayment(paymentData);
+        return { success: true, id };
     }
 
     async getPaymentFiltered(filters = {}) {
@@ -235,6 +249,8 @@ class PaymentService {
             }
         });
 
+        const paymentsByCurrency = { ARS: payments.filter(p => p.moneda === 'ARS').length, USD: payments.filter(p => p.moneda === 'USD').length };
+
         return {
             byServicioARS,
             byServicioUSD,
@@ -245,7 +261,8 @@ class PaymentService {
             categorias,
             totalPayments: payments.length,
             totalARS,
-            totalUSD
+            totalUSD,
+            paymentsByCurrency
         };
     }
 

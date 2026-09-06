@@ -6,6 +6,8 @@
 class ChartManager {
     constructor() {
         this.charts = {};
+        this._chartLoaded = false;
+        this._loadingPromise = null;
         this.colors = {
             primary: '#3498db',
             success: '#2ecc71',
@@ -18,6 +20,46 @@ class ChartManager {
                 '#8e44ad', '#16a085', '#c0392b', '#f1c40f', '#27ae60'
             ]
         };
+    }
+
+    ensureLoaded() {
+        if (this._chartLoaded && typeof Chart !== 'undefined') {
+            return Promise.resolve();
+        }
+        if (this._loadingPromise) {
+            return this._loadingPromise;
+        }
+        this._loadingPromise = new Promise((resolve, reject) => {
+            if (typeof Chart !== 'undefined') {
+                this._chartLoaded = true;
+                resolve();
+                return;
+            }
+            const cdnScript = document.createElement('script');
+            cdnScript.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+            cdnScript.onload = () => {
+                console.log('Chart.js cargado desde CDN');
+                this._chartLoaded = true;
+                resolve();
+            };
+            cdnScript.onerror = () => {
+                console.warn('CDN no disponible, intentando copia local...');
+                const localScript = document.createElement('script');
+                localScript.src = 'lib/chart.js';
+                localScript.onload = () => {
+                    console.log('Chart.js cargado desde copia local');
+                    this._chartLoaded = true;
+                    resolve();
+                };
+                localScript.onerror = () => {
+                    this._loadingPromise = null;
+                    reject(new Error('No se pudo cargar Chart.js (CDN ni local)'));
+                };
+                document.head.appendChild(localScript);
+            };
+            document.head.appendChild(cdnScript);
+        });
+        return this._loadingPromise;
     }
 
     getColorPalette(count) {
