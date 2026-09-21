@@ -38,6 +38,7 @@ async function initializeApp() {
             authManager._notifyAuthChange(user);
 
             authManager.onAuthChange(async (user) => {
+                updateAuthUI(user);
                 if (user && !user.isAnonymous) {
                     firestoreDb.setUser(user.uid);
                     dbToUse = firestoreDb;
@@ -65,6 +66,7 @@ async function initializeApp() {
         await uiManager.updateResumenHoy();
 
         setupLoginModal();
+        updateAuthUI(authManager.getUser());
 
     } catch (error) {
         console.error('Error iniciando aplicacion:', error);
@@ -75,13 +77,18 @@ async function initializeApp() {
 async function reloadApp() {
     if (!uiManager) return;
 
-    activeDb = authManager.isAuthenticated() ? firestoreDb : db;
+    const wasAuthenticated = authManager.isAuthenticated();
+    activeDb = wasAuthenticated ? firestoreDb : db;
     uiManager.db = activeDb;
     uiManager.service = new PaymentService(activeDb);
 
     await uiManager.service.initializeDefaults();
     await uiManager.reloadSelectOptions();
     await uiManager.updateResumenHoy();
+
+    if (wasAuthenticated) {
+        showToast('Sesión iniciada - datos sincronizados con la nube', 'success');
+    }
 }
 
 function setupLoginModal() {
@@ -150,6 +157,25 @@ async function handleEmailLinkSignIn() {
         } catch (error) {
             console.error('Error al iniciar sesión con link:', error);
         }
+    }
+}
+
+function updateAuthUI(user) {
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const header = document.querySelector('.header h1');
+
+    if (user && !user.isAnonymous) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) {
+            logoutBtn.style.display = 'inline-flex';
+            logoutBtn.textContent = user.email || 'Cerrar Sesión';
+        }
+        if (header) header.textContent = 'Control de Gastos - ' + (user.email || '');
+    } else {
+        if (loginBtn) loginBtn.style.display = 'inline-flex';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (header) header.textContent = 'Control de Gastos de Servicios';
     }
 }
 
