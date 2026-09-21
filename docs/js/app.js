@@ -91,15 +91,38 @@ async function reloadApp() {
     }
 }
 
+let isRegisterMode = false;
+
 function setupLoginModal() {
     const loginBtn = document.getElementById('loginBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const loginModal = document.getElementById('loginModal');
     const loginForm = document.getElementById('loginForm');
     const loginCancelBtn = document.getElementById('loginCancelBtn');
+    const toggleAuthMode = document.getElementById('toggleAuthMode');
+    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+    const authModalTitle = document.getElementById('authModalTitle');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const passwordInput = document.getElementById('loginPassword');
+    const passwordHint = document.getElementById('passwordHint');
+    const passwordGroup = document.getElementById('passwordGroup');
+
+    function resetModal() {
+        isRegisterMode = false;
+        if (authModalTitle) authModalTitle.textContent = 'Iniciar Sesión';
+        if (authSubmitBtn) authSubmitBtn.textContent = 'Iniciar Sesión';
+        if (toggleAuthMode) toggleAuthMode.textContent = 'Crear cuenta nueva';
+        if (forgotPasswordLink) forgotPasswordLink.style.display = 'block';
+        if (passwordGroup) passwordGroup.style.display = 'block';
+        if (passwordHint) passwordHint.style.display = 'none';
+        if (passwordInput) passwordInput.removeAttribute('minlength');
+        loginForm.reset();
+        document.getElementById('loginStatus').style.display = 'none';
+    }
 
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
+            resetModal();
             loginModal.style.display = 'block';
         });
     }
@@ -107,6 +130,74 @@ function setupLoginModal() {
     if (loginCancelBtn) {
         loginCancelBtn.addEventListener('click', () => {
             loginModal.style.display = 'none';
+            resetModal();
+        });
+    }
+
+    if (toggleAuthMode) {
+        toggleAuthMode.addEventListener('click', (e) => {
+            e.preventDefault();
+            isRegisterMode = !isRegisterMode;
+            if (isRegisterMode) {
+                authModalTitle.textContent = 'Crear Cuenta';
+                authSubmitBtn.textContent = 'Crear Cuenta';
+                toggleAuthMode.textContent = 'Ya tengo cuenta, iniciar sesión';
+                forgotPasswordLink.style.display = 'none';
+                passwordHint.style.display = 'block';
+            } else {
+                authModalTitle.textContent = 'Iniciar Sesión';
+                authSubmitBtn.textContent = 'Iniciar Sesión';
+                toggleAuthMode.textContent = 'Crear cuenta nueva';
+                forgotPasswordLink.style.display = 'block';
+                passwordHint.style.display = 'none';
+            }
+            document.getElementById('loginStatus').style.display = 'none';
+        });
+    }
+
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const statusEl = document.getElementById('loginStatus');
+
+            if (!email) {
+                statusEl.textContent = 'Ingresa tu email para recuperar la contraseña';
+                statusEl.className = 'login-status error';
+                statusEl.style.display = 'block';
+                return;
+            }
+
+            try {
+                statusEl.textContent = 'Enviando enlace de recuperación...';
+                statusEl.className = 'login-status info';
+                statusEl.style.display = 'block';
+
+                await authManager.resetPassword(email);
+                statusEl.textContent = 'Enviado. Revisa tu correo para restablecer la contraseña.';
+                statusEl.className = 'login-status success';
+            } catch (error) {
+                statusEl.textContent = 'Error: ' + error.message;
+                statusEl.className = 'login-status error';
+            }
+        });
+    }
+
+    if (passwordInput) {
+        passwordInput.addEventListener('input', () => {
+            if (!isRegisterMode) return;
+            const password = passwordInput.value;
+            const validation = authManager.validatePassword(password);
+            if (password.length === 0) {
+                passwordHint.textContent = '8+ caracteres, mayúscula, minúscula y número';
+                passwordHint.className = 'password-hint';
+            } else if (validation.valid) {
+                passwordHint.textContent = 'Contraseña válida';
+                passwordHint.className = 'password-hint valid';
+            } else {
+                passwordHint.textContent = validation.errors.join(' · ');
+                passwordHint.className = 'password-hint invalid';
+            }
         });
     }
 
@@ -114,18 +205,34 @@ function setupLoginModal() {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
             const statusEl = document.getElementById('loginStatus');
 
             try {
-                statusEl.textContent = 'Enviando enlace...';
+                statusEl.textContent = isRegisterMode ? 'Creando cuenta...' : 'Iniciando sesión...';
                 statusEl.className = 'login-status info';
                 statusEl.style.display = 'block';
 
-                await authManager.sendLoginLink(email);
-                statusEl.textContent = 'Enlace enviado a ' + email + '. Revisa tu correo.';
-                statusEl.className = 'login-status success';
+                if (isRegisterMode) {
+                    await authManager.register(email, password);
+                    statusEl.textContent = 'Cuenta creada correctamente';
+                    statusEl.className = 'login-status success';
+                } else {
+                    await authManager.login(email, password);
+                    statusEl.textContent = 'Sesión iniciada correctamente';
+                    statusEl.className = 'login-status success';
+                }
+
+                loginModal.style.display = 'none';
+                resetModal();
             } catch (error) {
-                statusEl.textContent = 'Error: ' + error.message;
+                let msg = error.message;
+                if (msg.includes('auth/email-already-in-use')) msg = 'Este email ya está registrado. Iniciá sesión.';
+                else if (msg.includes('auth/user-not-found')) msg = 'No existe una cuenta con este email.';
+                else if (msg.includes('auth/wrong-password')) msg = 'Contraseña incorrecta.';
+                else if (msg.includes('auth/invalid-email')) msg = 'Email inválido.';
+                else if (msg.includes('auth/weak-password')) msg = 'La contraseña es muy débil (mínimo 6 caracteres).';
+                statusEl.textContent = 'Error: ' + msg;
                 statusEl.className = 'login-status error';
             }
         });

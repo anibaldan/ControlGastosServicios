@@ -1,6 +1,6 @@
 /**
  * AuthManager - Gestión de autenticación con Firebase
- * Soporta: Email/Link (magic link) y Anonymous
+ * Soporta: Email/Password, Email/Link y Anonymous
  */
 
 class AuthManager {
@@ -37,6 +37,57 @@ class AuthManager {
 
     isAnonymous() {
         return this.user !== null && this.user.isAnonymous;
+    }
+
+    validatePassword(password) {
+        const errors = [];
+        if (!password || password.length < 8) {
+            errors.push('Mínimo 8 caracteres');
+        }
+        if (!/[A-Z]/.test(password)) {
+            errors.push('Al menos una mayúscula');
+        }
+        if (!/[a-z]/.test(password)) {
+            errors.push('Al menos una minúscula');
+        }
+        if (!/[0-9]/.test(password)) {
+            errors.push('Al menos un número');
+        }
+        return { valid: errors.length === 0, errors };
+    }
+
+    async register(email, password) {
+        if (!email || !email.trim()) {
+            throw new Error('El email es obligatorio');
+        }
+
+        const validation = this.validatePassword(password);
+        if (!validation.valid) {
+            throw new Error('Contraseña no cumple requisitos: ' + validation.errors.join(', '));
+        }
+
+        const result = await firebase.auth().createUserWithEmailAndPassword(email.trim(), password);
+        return result.user;
+    }
+
+    async login(email, password) {
+        if (!email || !email.trim()) {
+            throw new Error('El email es obligatorio');
+        }
+        if (!password) {
+            throw new Error('La contraseña es obligatoria');
+        }
+
+        const result = await firebase.auth().signInWithEmailAndPassword(email.trim(), password);
+        return result.user;
+    }
+
+    async resetPassword(email) {
+        if (!email || !email.trim()) {
+            throw new Error('El email es obligatorio');
+        }
+
+        await firebase.auth().sendPasswordResetEmail(email.trim());
     }
 
     async sendLoginLink(email) {
