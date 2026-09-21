@@ -9,6 +9,8 @@ async function initializeApp() {
     try {
         let dbToUse;
 
+        await db.init();
+
         if (typeof firebase !== 'undefined' && typeof firebaseConfig !== 'undefined') {
             const firebaseApp = firebase.initializeApp(firebaseConfig);
             const firebaseAuth = firebase.auth();
