@@ -1,7 +1,7 @@
 /**
  * FirestoreManager - Adaptador Firestore para Control de Gastos
  * Misma interfaz que DatabaseManager (db.js) pero usando Firebase Firestore
- * Soporta offline persistence y sync en tiempo real
+ * Sintaxis compat (v8/compat) para uso sin bundler
  */
 
 class FirestoreManager {
@@ -18,7 +18,7 @@ class FirestoreManager {
     }
 
     init(firebaseApp, firebaseAuth) {
-        this.db = firebaseApp;
+        this.db = firebaseApp.firestore();
         this.auth = firebaseAuth;
     }
 
@@ -29,12 +29,12 @@ class FirestoreManager {
 
     _getUserCollection(collectionName) {
         if (!this.userId) throw new Error('Usuario no autenticado');
-        return collection(this.db, 'users', this.userId, collectionName);
+        return this.db.collection('users').doc(this.userId).collection(collectionName);
     }
 
     _getDocRef(collectionName, docId) {
         if (!this.userId) throw new Error('Usuario no autenticado');
-        return doc(this.db, 'users', this.userId, collectionName, docId);
+        return this.db.collection('users').doc(this.userId).collection(collectionName).doc(docId);
     }
 
     _unsubscribeAll() {
@@ -46,7 +46,7 @@ class FirestoreManager {
     // ===================== PAGOS =====================
 
     async addPayment(paymentData) {
-        const docRef = await addDoc(this._getUserCollection('pagos'), {
+        const docRef = await this._getUserCollection('pagos').add({
             servicio: paymentData.servicio,
             medio: paymentData.medio,
             fechaPago: paymentData.fechaPago,
@@ -62,8 +62,7 @@ class FirestoreManager {
     }
 
     async getAllPayments() {
-        const q = query(this._getUserCollection('pagos'));
-        const snapshot = await getDocs(q);
+        const snapshot = await this._getUserCollection('pagos').get();
         return snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -71,16 +70,15 @@ class FirestoreManager {
     }
 
     async getPaymentById(id) {
-        const docRef = this._getDocRef('pagos', id);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) return null;
+        const docSnap = await this._getDocRef('pagos', id).get();
+        if (!docSnap.exists) return null;
         return { id: docSnap.id, ...docSnap.data() };
     }
 
     async updatePayment(id, updatedData) {
         const docRef = this._getDocRef('pagos', id);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) throw new Error('Pago no encontrado');
+        const docSnap = await docRef.get();
+        if (!docSnap.exists) throw new Error('Pago no encontrado');
 
         const payment = docSnap.data();
         const updated = {
@@ -95,13 +93,12 @@ class FirestoreManager {
             updatedAt: new Date().toISOString()
         };
 
-        await updateDoc(docRef, updated);
+        await docRef.update(updated);
         return updated;
     }
 
     async deletePayment(id) {
-        const docRef = this._getDocRef('pagos', id);
-        await deleteDoc(docRef);
+        await this._getDocRef('pagos', id).delete();
         return true;
     }
 
@@ -116,11 +113,9 @@ class FirestoreManager {
     }
 
     async getPaymentsByServicioNombre(nombre) {
-        const q = query(
-            this._getUserCollection('pagos'),
-            where('servicio', '==', nombre)
-        );
-        const snapshot = await getDocs(q);
+        const snapshot = await this._getUserCollection('pagos')
+            .where('servicio', '==', nombre)
+            .get();
         return snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -128,11 +123,9 @@ class FirestoreManager {
     }
 
     async getPaymentsByMedioNombre(nombre) {
-        const q = query(
-            this._getUserCollection('pagos'),
-            where('medio', '==', nombre)
-        );
-        const snapshot = await getDocs(q);
+        const snapshot = await this._getUserCollection('pagos')
+            .where('medio', '==', nombre)
+            .get();
         return snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -142,7 +135,7 @@ class FirestoreManager {
     // ===================== SERVICIOS =====================
 
     async addServicio(servicioData) {
-        const docRef = await addDoc(this._getUserCollection('servicios'), {
+        const docRef = await this._getUserCollection('servicios').add({
             nombre: servicioData.nombre,
             descripcion: servicioData.descripcion || ''
         });
@@ -150,8 +143,7 @@ class FirestoreManager {
     }
 
     async getAllServicios() {
-        const q = query(this._getUserCollection('servicios'));
-        const snapshot = await getDocs(q);
+        const snapshot = await this._getUserCollection('servicios').get();
         return snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -159,18 +151,17 @@ class FirestoreManager {
     }
 
     async getServicioById(id) {
-        const docRef = this._getDocRef('servicios', id);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) return null;
+        const docSnap = await this._getDocRef('servicios', id).get();
+        if (!docSnap.exists) return null;
         return { id: docSnap.id, ...docSnap.data() };
     }
 
     async updateServicio(id, updatedData) {
         const docRef = this._getDocRef('servicios', id);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) throw new Error('Servicio no encontrado');
+        const docSnap = await docRef.get();
+        if (!docSnap.exists) throw new Error('Servicio no encontrado');
 
-        await updateDoc(docRef, {
+        await docRef.update({
             nombre: updatedData.nombre,
             descripcion: updatedData.descripcion || ''
         });
@@ -178,15 +169,14 @@ class FirestoreManager {
     }
 
     async deleteServicio(id) {
-        const docRef = this._getDocRef('servicios', id);
-        await deleteDoc(docRef);
+        await this._getDocRef('servicios', id).delete();
         return true;
     }
 
     // ===================== MEDIOS =====================
 
     async addMedio(medioData) {
-        const docRef = await addDoc(this._getUserCollection('medios'), {
+        const docRef = await this._getUserCollection('medios').add({
             nombre: medioData.nombre,
             tipo: medioData.tipo || 'otro'
         });
@@ -194,8 +184,7 @@ class FirestoreManager {
     }
 
     async getAllMedios() {
-        const q = query(this._getUserCollection('medios'));
-        const snapshot = await getDocs(q);
+        const snapshot = await this._getUserCollection('medios').get();
         return snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -203,18 +192,17 @@ class FirestoreManager {
     }
 
     async getMedioById(id) {
-        const docRef = this._getDocRef('medios', id);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) return null;
+        const docSnap = await this._getDocRef('medios', id).get();
+        if (!docSnap.exists) return null;
         return { id: docSnap.id, ...docSnap.data() };
     }
 
     async updateMedio(id, updatedData) {
         const docRef = this._getDocRef('medios', id);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) throw new Error('Medio de pago no encontrado');
+        const docSnap = await docRef.get();
+        if (!docSnap.exists) throw new Error('Medio de pago no encontrado');
 
-        await updateDoc(docRef, {
+        await docRef.update({
             nombre: updatedData.nombre,
             tipo: updatedData.tipo || 'otro'
         });
@@ -222,26 +210,25 @@ class FirestoreManager {
     }
 
     async deleteMedio(id) {
-        const docRef = this._getDocRef('medios', id);
-        await deleteDoc(docRef);
+        await this._getDocRef('medios', id).delete();
         return true;
     }
 
     // ===================== UTILIDADES =====================
 
     async clearAllData() {
-        const batch1 = writeBatch(this.db);
-        const serviciosSnap = await getDocs(this._getUserCollection('servicios'));
+        const batch1 = this.db.batch();
+        const serviciosSnap = await this._getUserCollection('servicios').get();
         serviciosSnap.docs.forEach(doc => batch1.delete(doc.ref));
         await batch1.commit();
 
-        const batch2 = writeBatch(this.db);
-        const mediosSnap = await getDocs(this._getUserCollection('medios'));
+        const batch2 = this.db.batch();
+        const mediosSnap = await this._getUserCollection('medios').get();
         mediosSnap.docs.forEach(doc => batch2.delete(doc.ref));
         await batch2.commit();
 
-        const batch3 = writeBatch(this.db);
-        const pagosSnap = await getDocs(this._getUserCollection('pagos'));
+        const batch3 = this.db.batch();
+        const pagosSnap = await this._getUserCollection('pagos').get();
         pagosSnap.docs.forEach(doc => batch3.delete(doc.ref));
         await batch3.commit();
 

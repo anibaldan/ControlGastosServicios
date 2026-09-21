@@ -10,15 +10,15 @@ async function initializeApp() {
         let dbToUse;
 
         if (typeof firebase !== 'undefined' && typeof firebaseConfig !== 'undefined') {
-            const firebaseApp = initializeApp(firebaseConfig);
-            const firebaseAuth = getAuth(firebaseApp);
+            const firebaseApp = firebase.initializeApp(firebaseConfig);
+            const firebaseAuth = firebase.auth();
 
             firestoreDb.init(firebaseApp, firebaseAuth);
             authManager.init(firebaseApp);
 
             const user = await new Promise((resolve) => {
                 const timeout = setTimeout(() => resolve(null), 5000);
-                onAuthStateChanged(firebaseAuth, (user) => {
+                firebase.auth().onAuthStateChanged((user) => {
                     clearTimeout(timeout);
                     resolve(user);
                 });
@@ -73,7 +73,7 @@ async function initializeApp() {
 async function reloadApp() {
     if (!uiManager) return;
 
-    activeDb = firestoreDb.user ? firestoreDb : db;
+    activeDb = authManager.isAuthenticated() ? firestoreDb : db;
     uiManager.db = activeDb;
     uiManager.service = new PaymentService(activeDb);
 

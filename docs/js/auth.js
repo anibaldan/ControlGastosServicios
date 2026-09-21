@@ -6,12 +6,12 @@
 class AuthManager {
     constructor() {
         this.user = null;
-        this.db = null;
+        this.firebaseApp = null;
         this._onAuthChangeCallbacks = [];
     }
 
     init(firebaseApp) {
-        this.db = firebaseApp;
+        this.firebaseApp = firebaseApp;
     }
 
     onAuthChange(callback) {
@@ -49,7 +49,7 @@ class AuthManager {
             handleCodeInApp: true
         };
 
-        await sendSignInLinkToEmail(this.db.auth, email.trim(), actionCodeSettings);
+        await firebase.auth().sendSignInLinkToEmail(email.trim(), actionCodeSettings);
         localStorage.setItem('emailForSignIn', email.trim());
     }
 
@@ -58,18 +58,18 @@ class AuthManager {
             throw new Error('El email es obligatorio');
         }
 
-        const result = await signInWithEmailLink(this.db.auth, email.trim(), window.location.href);
+        const result = await firebase.auth().signInWithEmailLink(email.trim(), window.location.href);
         localStorage.removeItem('emailForSignIn');
         return result.user;
     }
 
     async signInAnonymously() {
-        const result = await signInAnonymously(this.db.auth);
+        const result = await firebase.auth().signInAnonymously();
         return result.user;
     }
 
     async signOut() {
-        await this.db.signOut();
+        await firebase.auth().signOut();
         this._notifyAuthChange(null);
     }
 }
