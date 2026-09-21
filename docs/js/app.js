@@ -18,25 +18,6 @@ async function initializeApp() {
             firestoreDb.init(firebaseApp, firebaseAuth);
             authManager.init(firebaseApp);
 
-            const user = await new Promise((resolve) => {
-                const timeout = setTimeout(() => resolve(null), 5000);
-                firebase.auth().onAuthStateChanged((user) => {
-                    clearTimeout(timeout);
-                    resolve(user);
-                });
-            });
-
-            if (user && !user.isAnonymous) {
-                firestoreDb.setUser(user.uid);
-                dbToUse = firestoreDb;
-                console.log('Usando Firestore - usuario autenticado:', user.email || user.uid);
-            } else {
-                dbToUse = db;
-                console.log('Usando IndexedDB - sin autenticación');
-            }
-
-            authManager._notifyAuthChange(user);
-
             authManager.onAuthChange(async (user) => {
                 updateAuthUI(user);
                 if (user && !user.isAnonymous) {
@@ -49,6 +30,19 @@ async function initializeApp() {
                     console.log('Cambiado a IndexedDB');
                     await reloadApp();
                 }
+            });
+
+            const user = await new Promise((resolve) => {
+                const timeout = setTimeout(() => resolve(null), 5000);
+                firebase.auth().onAuthStateChanged((user) => {
+                    clearTimeout(timeout);
+                    authManager._notifyAuthChange(user);
+                    resolve(user);
+                });
+            });
+
+            firebase.auth().onAuthStateChanged((user) => {
+                authManager._notifyAuthChange(user);
             });
         } else {
             dbToUse = db;
