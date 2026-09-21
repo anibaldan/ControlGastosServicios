@@ -653,3 +653,55 @@ body {
     .header, .tabs-container, .btn, .toast-container, .loading-overlay { display: none; }
     .data-table { width: 100%; }
 }
+
+/* Login Modal */
+.login-info {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.login-status {
+    padding: 10px;
+    border-radius: var(--border-radius);
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.login-status.info {
+    background-color: rgba(52, 152, 219, 0.2);
+    color: var(--color-primary);
+}
+
+.login-status.success {
+    background-color: rgba(46, 204, 113, 0.2);
+    color: var(--color-success);
+}
+
+.login-status.error {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: var(--color-danger);
+}
+
+/* Sync Status Indicator */
+.sync-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+.sync-status.online {
+    background-color: rgba(46, 204, 113, 0.2);
+    color: var(--color-success);
+}
+
+.sync-status.offline {
+    background-color: rgba(243, 156, 18, 0.2);
+    color: var(--color-warning);
+}

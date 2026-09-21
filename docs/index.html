@@ -15,6 +15,8 @@
             <div class="header-content">
                 <h1>Control de Gastos de Servicios</h1>
                 <div class="header-actions">
+                    <button class="btn btn-secondary" id="loginBtn">Iniciar Sesión</button>
+                    <button class="btn btn-secondary" id="logoutBtn" style="display:none;">Cerrar Sesión</button>
                     <button class="btn btn-secondary" id="themeToggle">Tema Oscuro</button>
                 </div>
             </div>
@@ -366,6 +368,26 @@
         </main>
     </div>
 
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal-btn" data-close="loginModal">&times;</span>
+            <h2>Iniciar Sesión</h2>
+            <p class="login-info">Ingresa tu email para recibir un enlace de acceso. Tus datos se sincronizarán entre dispositivos.</p>
+            <form id="loginForm" class="payment-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email *</label>
+                    <input type="email" id="loginEmail" required placeholder="tu@email.com">
+                </div>
+                <div id="loginStatus" class="login-status" style="display:none;"></div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Enviar Enlace</button>
+                    <button type="button" class="btn btn-secondary" id="loginCancelBtn">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal para Edicion de Pagos -->
     <div id="editModal" class="modal">
         <div class="modal-content">
@@ -512,7 +534,13 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
     <script src="js/db.js"></script>
+    <script src="js/db-firestore.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/services.js"></script>
     <script src="js/charts.js"></script>
     <script src="js/ui-core.js"></script>
