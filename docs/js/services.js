@@ -319,10 +319,19 @@ class PaymentService {
         if (!nombre || nombre.trim() === '') {
             throw new Error('El nombre del servicio es obligatorio');
         }
-        return await this.db.updateServicio(id, {
-            nombre: nombre.trim(),
+        const anterior = await this.db.getServicioById(id);
+        const nuevoNombre = nombre.trim();
+        const result = await this.db.updateServicio(id, {
+            nombre: nuevoNombre,
             descripcion: descripcion.trim()
         });
+        if (anterior && anterior.nombre !== nuevoNombre) {
+            const pagos = await this.db.getPaymentsByServicioNombre(anterior.nombre);
+            for (const p of pagos) {
+                await this.db.updatePayment(p.id, { servicio: nuevoNombre });
+            }
+        }
+        return result;
     }
 
     async agregarMedio(nombre, tipo = 'otro') {
@@ -353,10 +362,19 @@ class PaymentService {
         if (!nombre || nombre.trim() === '') {
             throw new Error('El nombre del medio es obligatorio');
         }
-        return await this.db.updateMedio(id, {
-            nombre: nombre.trim(),
+        const anterior = await this.db.getMedioById(id);
+        const nuevoNombre = nombre.trim();
+        const result = await this.db.updateMedio(id, {
+            nombre: nuevoNombre,
             tipo
         });
+        if (anterior && anterior.nombre !== nuevoNombre) {
+            const pagos = await this.db.getPaymentsByMedioNombre(anterior.nombre);
+            for (const p of pagos) {
+                await this.db.updatePayment(p.id, { medio: nuevoNombre });
+            }
+        }
+        return result;
     }
 
     async getResumenPeriodo(year = null, month = null) {

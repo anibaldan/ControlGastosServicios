@@ -250,8 +250,21 @@ UIManager.prototype.openEditModal = async function(id) {
 
     await this.reloadSelectOptions();
 
-    document.getElementById('editServicio').value = payment.servicio;
-    document.getElementById('editMedio').value = payment.medio;
+    const setSelectValue = (selectId, value) => {
+        const select = document.getElementById(selectId);
+        select.value = value;
+        if (select.value !== value && value) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = escapeHtml(value);
+            option.style.color = '#e74c3c';
+            select.appendChild(option);
+            select.value = value;
+        }
+    };
+
+    setSelectValue('editServicio', payment.servicio);
+    setSelectValue('editMedio', payment.medio);
     document.getElementById('editFechaPago').value = payment.fechaPago;
     document.getElementById('editFechaVencimiento').value = payment.fechaVencimiento;
     document.getElementById('editImporte').value = payment.importe;
