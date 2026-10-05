@@ -45,6 +45,7 @@ class UIManager {
         document.getElementById('themeToggle')?.addEventListener('click', () => this.toggleTheme());
 
         document.getElementById('filterServicio')?.addEventListener('change', () => this.refreshHistorial());
+        document.getElementById('filterMedio')?.addEventListener('change', () => this.refreshHistorial());
         document.getElementById('filterAño')?.addEventListener('change', () => this.refreshHistorial());
         document.getElementById('filterMes')?.addEventListener('change', () => this.refreshHistorial());
         document.getElementById('clearFiltersBtn')?.addEventListener('click', () => this.clearFilters());

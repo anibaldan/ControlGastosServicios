@@ -57,6 +57,7 @@ UIManager.prototype.initHistorial = async function() {
     this.showLoading();
     try {
         const servicios = (await this.db.getAllServicios()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+        const medios = (await this.db.getAllMedios()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
         const years = await this.service.getAvailableYears();
 
         const servicioFilter = document.getElementById('filterServicio');
@@ -66,6 +67,15 @@ UIManager.prototype.initHistorial = async function() {
             option.value = s.nombre;
             option.textContent = escapeHtml(s.nombre);
             servicioFilter.appendChild(option);
+        });
+
+        const medioFilter = document.getElementById('filterMedio');
+        medioFilter.innerHTML = '<option value="">Todos los medios</option>';
+        medios.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.nombre;
+            option.textContent = escapeHtml(m.nombre);
+            medioFilter.appendChild(option);
         });
 
         const yearFilter = document.getElementById('filterAño');
@@ -86,6 +96,7 @@ UIManager.prototype.initHistorial = async function() {
 UIManager.prototype.refreshHistorial = async function() {
     const filters = {
         servicio: document.getElementById('filterServicio').value,
+        medio: document.getElementById('filterMedio').value,
         year: document.getElementById('filterAño').value,
         month: document.getElementById('filterMes').value,
         search: document.getElementById('searchInput')?.value || ''
@@ -312,6 +323,7 @@ UIManager.prototype.confirmDelete = function(id) {
 
 UIManager.prototype.clearFilters = function() {
     document.getElementById('filterServicio').value = '';
+    document.getElementById('filterMedio').value = '';
     document.getElementById('filterAño').value = '';
     document.getElementById('filterMes').value = '';
     const searchInput = document.getElementById('searchInput');

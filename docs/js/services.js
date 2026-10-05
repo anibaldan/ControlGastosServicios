@@ -125,6 +125,10 @@ class PaymentService {
             payments = payments.filter(p => p.servicio === filters.servicio);
         }
 
+        if (filters.medio && filters.medio !== '') {
+            payments = payments.filter(p => p.medio === filters.medio);
+        }
+
         if (filters.year && filters.year !== '') {
             payments = payments.filter(p => {
                 const d = parseLocalDate(p.fechaPago);
