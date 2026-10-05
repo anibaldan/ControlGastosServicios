@@ -1,9 +1,12 @@
-const CACHE_NAME = 'control-gastos-v2';
+const CACHE_NAME = 'control-gastos-v3';
 const ASSETS = [
     '.',
     'index.html',
     'css/styles.css',
+    'js/firebase-config.js',
     'js/db.js',
+    'js/db-firestore.js',
+    'js/auth.js',
     'js/services.js',
     'js/charts.js',
     'js/ui-core.js',
@@ -37,7 +40,18 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+
     if (event.request.method !== 'GET') return;
+    if (url.origin !== self.location.origin) return;
+    if (url.hostname.includes('firestore.googleapis.com') ||
+        url.hostname.includes('firebaseapp.com') ||
+        url.hostname.includes('gstatic.com') ||
+        url.hostname.includes('identitytoolkit.googleapis.com') ||
+        url.hostname.includes('securetoken.googleapis.com') ||
+        url.hostname.includes('www.googleapis.com')) {
+        return;
+    }
 
     event.respondWith(
         caches.match(event.request).then((cached) => {
