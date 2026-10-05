@@ -29,12 +29,16 @@ class FirestoreManager {
 
     _getUserCollection(collectionName) {
         if (!this.userId) throw new Error('Usuario no autenticado');
-        return this.db.collection('users').doc(this.userId).collection(collectionName);
+        return this.db.collection('users').doc(String(this.userId)).collection(collectionName);
     }
 
     _getDocRef(collectionName, docId) {
         if (!this.userId) throw new Error('Usuario no autenticado');
-        return this.db.collection('users').doc(this.userId).collection(collectionName).doc(docId);
+        if (docId === undefined || docId === null || docId === '') {
+            console.error('_getDocRef: docId inválido', { collectionName, docId, type: typeof docId });
+            throw new Error('ID de documento no válido');
+        }
+        return this.db.collection('users').doc(String(this.userId)).collection(collectionName).doc(String(docId));
     }
 
     _unsubscribeAll() {
@@ -64,8 +68,8 @@ class FirestoreManager {
     async getAllPayments() {
         const snapshot = await this._getUserCollection('pagos').get();
         return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            id: doc.id
         }));
     }
 
@@ -117,8 +121,8 @@ class FirestoreManager {
             .where('servicio', '==', nombre)
             .get();
         return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            id: doc.id
         }));
     }
 
@@ -127,8 +131,8 @@ class FirestoreManager {
             .where('medio', '==', nombre)
             .get();
         return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            id: doc.id
         }));
     }
 
@@ -145,8 +149,8 @@ class FirestoreManager {
     async getAllServicios() {
         const snapshot = await this._getUserCollection('servicios').get();
         return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            id: doc.id
         }));
     }
 
@@ -186,8 +190,8 @@ class FirestoreManager {
     async getAllMedios() {
         const snapshot = await this._getUserCollection('medios').get();
         return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
+            ...doc.data(),
+            id: doc.id
         }));
     }
 
