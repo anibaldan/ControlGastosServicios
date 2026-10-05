@@ -326,7 +326,9 @@ class PaymentService {
             descripcion: descripcion.trim()
         });
         if (anterior && anterior.nombre !== nuevoNombre) {
+            console.log(`[cascade-servicio] "${anterior.nombre}" -> "${nuevoNombre}"`);
             const pagos = await this.db.getPaymentsByServicioNombre(anterior.nombre);
+            console.log(`[cascade-servicio] pagos encontrados: ${pagos.length}`);
             for (const p of pagos) {
                 await this.db.updatePayment(p.id, { servicio: nuevoNombre });
             }
@@ -369,10 +371,15 @@ class PaymentService {
             tipo
         });
         if (anterior && anterior.nombre !== nuevoNombre) {
+            console.log(`[cascade-medio] "${anterior.nombre}" -> "${nuevoNombre}"`);
             const pagos = await this.db.getPaymentsByMedioNombre(anterior.nombre);
+            console.log(`[cascade-medio] pagos encontrados: ${pagos.length}`);
             for (const p of pagos) {
+                console.log('[cascade-medio] actualizando pago', p.id, 'medio:', p.medio);
                 await this.db.updatePayment(p.id, { medio: nuevoNombre });
             }
+        } else {
+            console.log('[cascade-medio] sin cambios o anterior=null', { anterior, nuevoNombre });
         }
         return result;
     }

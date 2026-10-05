@@ -183,6 +183,7 @@ UIManager.prototype.handleUpdateMedio = async function(e) {
         this.refreshMedios();
         this.reloadSelectOptions();
     } catch (error) {
+        console.error('[handleUpdateMedio]', error);
         this.showToast('Error: ' + error.message, 'error');
     }
 };
