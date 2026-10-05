@@ -46,11 +46,11 @@ UIManager.prototype.refreshServicios = async function() {
     `).join('');
 
     container.querySelectorAll('.edit-servicio-btn').forEach(btn => {
-        btn.addEventListener('click', () => this.handleEditServicio(parseInt(btn.dataset.id)));
+        btn.addEventListener('click', () => this.handleEditServicio(btn.dataset.id));
     });
 
     container.querySelectorAll('.delete-servicio-btn').forEach(btn => {
-        btn.addEventListener('click', () => this.handleDeleteServicio(parseInt(btn.dataset.id)));
+        btn.addEventListener('click', () => this.handleDeleteServicio(btn.dataset.id));
     });
 };
 
@@ -146,11 +146,11 @@ UIManager.prototype.refreshMedios = async function() {
     `).join('');
 
     container.querySelectorAll('.edit-medio-btn').forEach(btn => {
-        btn.addEventListener('click', () => this.handleEditMedio(parseInt(btn.dataset.id)));
+        btn.addEventListener('click', () => this.handleEditMedio(btn.dataset.id));
     });
 
     container.querySelectorAll('.delete-medio-btn').forEach(btn => {
-        btn.addEventListener('click', () => this.handleDeleteMedio(parseInt(btn.dataset.id)));
+        btn.addEventListener('click', () => this.handleDeleteMedio(btn.dataset.id));
     });
 };
 

@@ -78,6 +78,11 @@ class DatabaseManager {
         if (!this.db) throw new Error('Base de datos no inicializada. Llame a init() primero.');
     }
 
+    _toDbId(id) {
+        if (typeof id === 'string' && /^\d+$/.test(id)) return parseInt(id, 10);
+        return id;
+    }
+
     _transaction(storeName, mode) {
         this._ensureDb();
         return this.db.transaction([storeName], mode);
@@ -122,7 +127,7 @@ class DatabaseManager {
         return new Promise((resolve, reject) => {
             const transaction = this._transaction(this.objectStores.payments, 'readonly');
             const store = transaction.objectStore(this.objectStores.payments);
-            const request = store.get(id);
+            const request = store.get(this._toDbId(id));
             request.onerror = () => reject(request.error);
             request.onsuccess = () => resolve(request.result);
         });
@@ -133,7 +138,7 @@ class DatabaseManager {
         return new Promise((resolve, reject) => {
             const transaction = this._transaction(this.objectStores.payments, 'readwrite');
             const store = transaction.objectStore(this.objectStores.payments);
-            const getRequest = store.get(id);
+            const getRequest = store.get(this._toDbId(id));
             getRequest.onsuccess = () => {
                 const payment = getRequest.result;
                 if (!payment) {
@@ -155,7 +160,7 @@ class DatabaseManager {
         return new Promise((resolve, reject) => {
             const transaction = this._transaction(this.objectStores.payments, 'readwrite');
             const store = transaction.objectStore(this.objectStores.payments);
-            const request = store.delete(id);
+            const request = store.delete(this._toDbId(id));
             request.onerror = () => reject(request.error);
             request.onsuccess = () => resolve(true);
         });
@@ -212,7 +217,7 @@ class DatabaseManager {
         return new Promise((resolve, reject) => {
             const transaction = this._transaction(this.objectStores.servicios, 'readonly');
             const store = transaction.objectStore(this.objectStores.servicios);
-            const request = store.get(id);
+            const request = store.get(this._toDbId(id));
             request.onerror = () => reject(request.error);
             request.onsuccess = () => resolve(request.result);
         });
@@ -223,7 +228,7 @@ class DatabaseManager {
         return new Promise((resolve, reject) => {
             const transaction = this._transaction(this.objectStores.servicios, 'readwrite');
             const store = transaction.objectStore(this.objectStores.servicios);
-            const request = store.delete(id);
+            const request = store.delete(this._toDbId(id));
             request.onerror = () => reject(request.error);
             request.onsuccess = () => resolve(true);
         });
@@ -234,7 +239,7 @@ class DatabaseManager {
         return new Promise((resolve, reject) => {
             const transaction = this._transaction(this.objectStores.servicios, 'readwrite');
             const store = transaction.objectStore(this.objectStores.servicios);
-            const getRequest = store.get(id);
+            const getRequest = store.get(this._toDbId(id));
             getRequest.onsuccess = () => {
                 const servicio = getRequest.result;
                 if (!servicio) {
@@ -277,7 +282,7 @@ class DatabaseManager {
         return new Promise((resolve, reject) => {
             const transaction = this._transaction(this.objectStores.medios, 'readonly');
             const store = transaction.objectStore(this.objectStores.medios);
-            const request = store.get(id);
+            const request = store.get(this._toDbId(id));
             request.onerror = () => reject(request.error);
             request.onsuccess = () => resolve(request.result);
         });
@@ -288,7 +293,7 @@ class DatabaseManager {
         return new Promise((resolve, reject) => {
             const transaction = this._transaction(this.objectStores.medios, 'readwrite');
             const store = transaction.objectStore(this.objectStores.medios);
-            const request = store.delete(id);
+            const request = store.delete(this._toDbId(id));
             request.onerror = () => reject(request.error);
             request.onsuccess = () => resolve(true);
         });
@@ -299,7 +304,7 @@ class DatabaseManager {
         return new Promise((resolve, reject) => {
             const transaction = this._transaction(this.objectStores.medios, 'readwrite');
             const store = transaction.objectStore(this.objectStores.medios);
-            const getRequest = store.get(id);
+            const getRequest = store.get(this._toDbId(id));
             getRequest.onsuccess = () => {
                 const medio = getRequest.result;
                 if (!medio) {

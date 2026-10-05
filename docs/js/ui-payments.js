@@ -189,11 +189,11 @@ UIManager.prototype.renderHistorialPage = function() {
     }).join('');
 
     tbody.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => this.openEditModal(parseInt(btn.dataset.id)));
+        btn.addEventListener('click', () => this.openEditModal(btn.dataset.id));
     });
 
     tbody.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', () => this.confirmDelete(parseInt(btn.dataset.id)));
+        btn.addEventListener('click', () => this.confirmDelete(btn.dataset.id));
     });
 
     this._setupRowSwipe(tbody);
