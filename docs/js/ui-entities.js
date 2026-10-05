@@ -147,14 +147,12 @@ UIManager.prototype.refreshMedios = async function() {
 
     container.querySelectorAll('.edit-medio-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            console.log('edit-medio click, dataset.id:', btn.dataset.id, 'type:', typeof btn.dataset.id);
             this.handleEditMedio(btn.dataset.id);
         });
     });
 
     container.querySelectorAll('.delete-medio-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            console.log('delete-medio click, dataset.id:', btn.dataset.id, 'type:', typeof btn.dataset.id);
             this.handleDeleteMedio(btn.dataset.id);
         });
     });
