@@ -5,10 +5,26 @@
 let uiManager = null;
 let activeDb = null;
 
+async function cleanOldServiceWorkers() {
+    if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+            await registration.unregister();
+        }
+    }
+    if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        for (const cacheName of cacheNames) {
+            await caches.delete(cacheName);
+        }
+    }
+}
+
 async function initializeApp() {
     try {
         let dbToUse;
 
+        await cleanOldServiceWorkers();
         await db.init();
 
         if (typeof firebase !== 'undefined' && typeof firebaseConfig !== 'undefined') {
