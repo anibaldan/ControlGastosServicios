@@ -1,4 +1,4 @@
-const CACHE_NAME = 'control-gastos-v5';
+const CACHE_NAME = 'control-gastos-v6';
 const ASSETS = [
     '.',
     'index.html',

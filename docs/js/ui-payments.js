@@ -283,7 +283,7 @@ UIManager.prototype.openEditModal = async function(id) {
     document.getElementById('editCategoria').value = payment.categoria || '';
     document.getElementById('editNotas').value = payment.notas || '';
 
-    document.getElementById('editModal').style.display = 'block';
+    document.getElementById('editModal').style.display = 'flex';
 };
 
 UIManager.prototype.handleUpdatePayment = async function(e) {

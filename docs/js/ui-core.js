@@ -172,7 +172,7 @@ class UIManager {
 
     showConfirm(message, callback) {
         document.getElementById('confirmMessage').textContent = message;
-        document.getElementById('confirmModal').style.display = 'block';
+        document.getElementById('confirmModal').style.display = 'flex';
         this.confirmCallback = callback;
     }
 

@@ -51,7 +51,7 @@ UIManager.prototype.handleImportJson = async function(e) {
         this.pendingImportData = data;
         document.getElementById('importModeInfo').textContent =
             `El archivo contiene: ${serviciosCount} servicios, ${mediosCount} medios, ${pagosCount} pagos.\n\nComo desea importar?`;
-        document.getElementById('importModeModal').style.display = 'block';
+        document.getElementById('importModeModal').style.display = 'flex';
     } catch (error) {
         this.showToast('Error al leer el archivo: ' + error.message, 'error');
     } finally {

@@ -494,6 +494,8 @@ body {
 }
 
 /* Modales */
+/* Overlay scrolleable: si el contenido no entra en pantalla (PC de bajita o
+   celular), el modal se desplaza en vez de quedar cortado/bloqueado. */
 .modal {
     display: none;
     position: fixed;
@@ -504,11 +506,17 @@ body {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s ease;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* scroll suave en iOS */
+    overscroll-behavior: contain;       /* evita que el scroll "se escape" al body */
+    padding: 24px 12px;                 /* aire arriba/abajo para llegar al final */
 }
 
+/* Con el overlay en flex, margin:auto centra el modal cuando entra en pantalla
+   y pasa a 0 (contenido arrancando arriba + scroll) cuando no entra. */
 .modal-content {
     background-color: var(--bg-primary);
-    margin: 5% auto;
+    margin: auto;
     padding: 20px;
     border-radius: var(--border-radius);
     max-width: 500px;
@@ -635,7 +643,7 @@ body {
     .list-item { flex-direction: column; align-items: flex-start; }
     .filter-group { flex-direction: column; }
     .filter-group select, .filter-search { width: 100%; min-width: unset; }
-    .modal-content { margin: 20% auto; width: 95%; }
+    .modal-content { width: 95%; } /* sin margin-top extra: el overlay flex ya centra/scrolla */
     .toast-container { left: 10px; right: 10px; top: auto; bottom: 20px; }
     .toast { max-width: 100%; }
 }

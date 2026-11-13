@@ -133,7 +133,7 @@ function setupLoginModal() {
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
             resetModal();
-            loginModal.style.display = 'block';
+            loginModal.style.display = 'flex';
         });
     }
 

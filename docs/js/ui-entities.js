@@ -63,7 +63,7 @@ UIManager.prototype.handleEditServicio = async function(id) {
     }
     document.getElementById('editServicioNombre').value = servicio.nombre;
     document.getElementById('editServicioDescripcion').value = servicio.descripcion || '';
-    document.getElementById('editServicioModal').style.display = 'block';
+    document.getElementById('editServicioModal').style.display = 'flex';
 };
 
 UIManager.prototype.handleUpdateServicio = async function(e) {
@@ -167,7 +167,7 @@ UIManager.prototype.handleEditMedio = async function(id) {
     }
     document.getElementById('editMedioNombre').value = medio.nombre;
     document.getElementById('editMedioTipo').value = medio.tipo;
-    document.getElementById('editMedioModal').style.display = 'block';
+    document.getElementById('editMedioModal').style.display = 'flex';
 };
 
 UIManager.prototype.handleUpdateMedio = async function(e) {
